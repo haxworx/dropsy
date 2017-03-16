@@ -4,14 +4,6 @@
 
    USAGE
  
-   To configure username and password for the server instance,
-   add:
-
-   "username:password\n" to config/passwd for each user.
- 
-   On the server run dropsyd.go with Go-lang compiler/interpreter and
-   in the directory you wish filesystem mirroring to occur.
-  
    The client is executed as below:
  
    $ dropsy username@host:/path/to/directory 
@@ -37,6 +29,9 @@
 
    E-mail: netstar@gmail.com
    Web: http://haxlab.org
+
+   Client: https://github.com/haxwox/dropsy (this)
+   Server: https://github.com/haxworx/dropsyd
 
    DONATIONS
 
