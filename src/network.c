@@ -3,9 +3,13 @@
 
 #include <stdarg.h>
 #include <unistd.h>
-
+#if defined(__linux__)
+# include <linux/limits.h>
+#endif
 #define REMOTE_URI "/any"
 #define BUF_MAX 4096
+
+char *getpass(const char *prompt);
 
 void Error(char *fmt, ...)
 {
