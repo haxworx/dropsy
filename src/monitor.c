@@ -7,7 +7,7 @@
 bool first_run = false;
 bool quit = false;
 
-char *_get_state_file_name(const char *path, const char *hostname);
+char *_get_state_file_name(const char *path, const char *hostname, const char *username);
 file_t *file_list_state_get(const char *path);
 
 int error(char *str)
@@ -400,7 +400,7 @@ monitor_files_get(monitor_t *mon, file_t *list)
 }
 
 char *
-_get_state_file_name(const char *path, const char *hostname)
+_get_state_file_name(const char *path, const char *hostname, const char *username)
 {
 	char buf[PATH_MAX];
 	char absolute[PATH_MAX * 2 + 1];
@@ -417,14 +417,16 @@ _get_state_file_name(const char *path, const char *hostname)
 	if (stat(buf, &st) < 0)
 		mkdir(buf, 0755);
 
-	char hashname[(strlen(hostname) * 2) + (strlen(absolute) * 2) + 1];
-      
-        snprintf(absolute, sizeof(absolute), "%s:%s", absolute, hostname);	
-	memset(hashname, 0, strlen(absolute) * 2 + 1);	
-	for (int i = 0; i < strlen(absolute); i++)
-		snprintf(hashname, sizeof(hashname), "%s%2x", hashname, absolute[i]);
+	char hashname[(strlen(username) * 2) + (strlen(hostname) * 2) + (strlen(absolute) * 2) + 1];
+ 
+	char hashvalue[PATH_MAX * 3 + 1];     
+        snprintf(hashvalue, sizeof(hashvalue), "%s:%s:%s", username, hostname, absolute);	
 
-	// return path for unique state file path (unique to location and destination)
+	memset(hashname, 0, strlen(hashvalue) * 2 + 1);	
+	for (int i = 0; i < strlen(hashvalue); i++)
+		snprintf(hashname, sizeof(hashname), "%s%2x", hashname, hashvalue[i]);
+
+	// return path for unique state file path (unique to user, location and destination)
 	snprintf(buf, sizeof(buf), "%s/%s", buf, hashname);
 	return strdup(buf);
 }
@@ -535,7 +537,7 @@ monitor_watch_add(void *self, const char *path)
 	
 	mon->directories[mon->_d_idx++] = strdup(path);
 
-	mon->state_file = _get_state_file_name(path, mon->hostname);
+	mon->state_file = _get_state_file_name(path, mon->hostname, mon->username);
 
 	return 1;
 }
