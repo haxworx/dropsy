@@ -32,3 +32,4 @@ scripts:
 clean:
 	-rm $(PROGRAM) 
 	-rm $(OBJECTS_DIR)/*.o
+	-rm -r $(OBJECTS_DIR)
