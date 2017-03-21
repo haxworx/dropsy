@@ -59,6 +59,7 @@ monitor_t *monitor_new(void)
 	m->authenticate = &authenticate;
 	m->remote_add = remote_file_add;
 	m->remote_del = remote_file_del;
+        m->shutdown = &monitor_shutdown;
 
 	return m;
 }
@@ -82,6 +83,22 @@ int monitor_mainloop(void *self, int interval)
 	return 1;
 }                
 
+void _clear_password(char *pass) 
+{
+        while (*pass) {
+                *pass = '\0';
+                pass++;
+        }
+}
+
+void monitor_shutdown(void *self)
+{
+        monitor_t *mon = self;
+
+        _clear_password(mon->password);
+
+        free(mon);
+}
 
 int monitor_callback_set(void *self, int type, callback func)
 {
@@ -542,13 +559,15 @@ monitor_watch_add(void *self, const char *path)
 	return 1;
 }
 
-void exit_safe(int sig)
+void
+exit_safe(int sig)
 {
         if (sig != SIGINT && sig != SIGTERM) return;
         quit = true;
 }
 
-int set_arguments(monitor_t *mon, char *cmd_string)
+int
+set_arguments(monitor_t *mon, char *cmd_string)
 {
         char buf[PATH_MAX];
         char *user_start = cmd_string;
@@ -579,7 +598,7 @@ monitor_init(void *self, char *cmd_string)
 	monitor_t *mon = self;
 
 	if (!set_arguments(mon, cmd_string)) {
-		return 0;
+		return (0);
 	}
 	
 	mon->directories[mon->_d_idx] = NULL;
@@ -592,6 +611,6 @@ monitor_init(void *self, char *cmd_string)
 	mon->list_now = NULL;	
 	mon->initialized = true;
 
-	return 1;
+	return (1);
 }
 

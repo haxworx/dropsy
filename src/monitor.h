@@ -43,12 +43,14 @@ typedef int (*fn_authenticate)(void *self);
 typedef int (*fn_remote_del)(void *self, char *file);
 typedef int (*fn_remote_add)(void *self, char *file);
 typedef int (*fn_error)(char *string);
+typedef void (*fn_shutdown)(void *self);
 
 /* External functions */
 int monitor_watch(void *self, int poll_interval);
 int monitor_mainloop(void *self, int poll_interval);
 int monitor_watch_add(void *self, const char *path);
 int monitor_callback_set(void *self, int type, callback);
+void monitor_shutdown(void *self);
 int monitor_init(void *self, char *);
 int error(char *);
 
@@ -76,6 +78,7 @@ struct monitor_t {
 	fn_authenticate authenticate;
 	fn_remote_add remote_add;
 	fn_remote_del remote_del;
+        fn_shutdown shutdown;
 	callback add_callback;
 	callback del_callback;
 	callback mod_callback;	

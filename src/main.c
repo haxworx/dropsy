@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 	/* if interval is 0 run once only */
 	mon->mainloop(mon->self, interval);
 
-	free(mon);
+	mon->shutdown(mon->self);
 	
 	printf("done!\n");
 
