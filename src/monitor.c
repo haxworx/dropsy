@@ -26,12 +26,12 @@ wait_for_job(void)
 	if (pid <= 0)
 		error("wait");	
         
-        if (!WIFEXITED(status)) return 1; 
+        if (!WIFEXITED(status)) return (1); 
         status = WEXITSTATUS(status);
   
-        //printf("Status is %d\n", status); 
 	--n_jobs;
-        return status;
+
+        return (status);
 }
 
 int
@@ -39,32 +39,37 @@ wait_for_all_jobs(void)
 {
 	while (n_jobs) {
 		int error = wait_for_job();
-                if (error) return 0;
+                if (error)
+			return (0);
 	}
 
-        return 1;
+        return (1);
 }
 
-monitor_t *monitor_new(void)
+monitor_t *
+monitor_new(void)
 {
-	monitor_t *m = calloc(1, sizeof(monitor_t));
-	if (!m) return NULL;
-	m->error = &error;
-	m->callback_set = &monitor_callback_set;
-	m->watch_add = &monitor_watch_add;
-	m->init = &monitor_init;
-	m->watch = &monitor_watch;
-	m->mainloop = &monitor_mainloop;
-	m->self = m;
-	m->authenticate = &authenticate;
-	m->remote_add = remote_file_add;
-	m->remote_del = remote_file_del;
-        m->shutdown = &monitor_shutdown;
+	monitor_t *mon = calloc(1, sizeof(monitor_t));
+	if (!mon)
+		return (NULL);
 
-	return m;
+	mon->error = &error;
+	mon->callback_set = &monitor_callback_set;
+	mon->watch_add = &monitor_watch_add;
+	mon->init = &monitor_init;
+	mon->watch = &monitor_watch;
+	mon->mainloop = &monitor_mainloop;
+	mon->self = mon;
+	mon->authenticate = &authenticate;
+	mon->remote_add = remote_file_add;
+	mon->remote_del = remote_file_del;
+        mon->shutdown = &monitor_shutdown;
+
+	return (mon);
 }
 
-int monitor_mainloop(void *self, int interval) 
+int
+monitor_mainloop(void *self, int interval) 
 {
 	monitor_t *mon = self;
 	if (mon->_d_idx == 0) exit(1 << 0);
@@ -80,10 +85,11 @@ int monitor_mainloop(void *self, int interval)
 	// for changes every interval seconds...
         while (monitor_watch(self, interval) && !quit);
 
-	return 1;
+	return (1);
 }                
 
-void _clear_password(char *pass) 
+void
+_clear_password(char *pass) 
 {
         while (*pass) {
                 *pass = '\0';
@@ -91,7 +97,8 @@ void _clear_password(char *pass)
         }
 }
 
-void monitor_shutdown(void *self)
+void
+monitor_shutdown(void *self)
 {
         monitor_t *mon = self;
 
@@ -100,22 +107,23 @@ void monitor_shutdown(void *self)
         free(mon);
 }
 
-int monitor_callback_set(void *self, int type, callback func)
+int
+monitor_callback_set(void *self, int type, callback func)
 {
 	monitor_t *mon = self;
 
         switch (type) {
         case MONITOR_ADD:
-                mon->add_callback = func;
-                break;
+        mon->add_callback = func;
+        break;
         case MONITOR_DEL:
-                mon->del_callback = func;
-                break;
+        mon->del_callback = func;
+        break;
         case MONITOR_MOD:
-                mon->mod_callback = func;
+        mon->mod_callback = func;
         };
 
-	return 1;
+	return (1);
 }
 
 void 
@@ -151,7 +159,7 @@ file_list_add(file_t *list, char *path, struct stat *st)
 		c->changed = 0; 
 	}
 
-	return list;
+	return (list);
 }
 
 file_t *
@@ -161,12 +169,12 @@ file_exists(file_t *list, const char *filename)
 
 	while (f) {
 		if (!strcmp(f->path, filename)) {
-			return f;
+			return (f);
 		}
 		f = f->next;
 	}
 	
-	return NULL;
+	return (NULL);
 }
 
 int
@@ -177,7 +185,7 @@ _check_add_files(monitor_t *mon, file_t *first, file_t *second)
 
 	while (f) {
 		file_t *exists = file_exists(first, f->path);
-		if (!exists || first_run) {
+		if ((!exists) || (first_run)) {
 			if (mon->add_callback)
 				mon->add_callback(f);
 
@@ -202,7 +210,7 @@ _check_add_files(monitor_t *mon, file_t *first, file_t *second)
 		f = f->next;
 	}
 
-	return changes;
+	return (changes);
 }
 
 int
@@ -234,7 +242,7 @@ _check_del_files(monitor_t *mon, file_t *first, file_t *second)
 		f = f->next;
 	}
 
-	return changes;
+	return (changes);
 }
 
 int
@@ -269,12 +277,13 @@ _check_mod_files(monitor_t* mon, file_t *first, file_t *second)
 		f = f->next;
 	}
 	
-	return changes;
+	return (changes);
 }
 
 void
-_transfer_error(void)
+_transfer_error(monitor_t *mon)
 {
+	monitor_shutdown(mon);
         fprintf(stderr, "FATAL: transfer error. Test network and retry!\n");
         exit(1);
 }
@@ -295,7 +304,7 @@ file_lists_compare(monitor_t *monitor, file_t *first, file_t *second)
 		total += modifications;
 		success = wait_for_all_jobs(); 
                 if (!success) {
-                       _transfer_error();
+                       _transfer_error(monitor);
 		}
 	}
 
@@ -304,7 +313,7 @@ file_lists_compare(monitor_t *monitor, file_t *first, file_t *second)
 		total += modifications;
 		success = wait_for_all_jobs();	
                 if (!success) {
-                        _transfer_error();
+                        _transfer_error(monitor);
 		}
 	}
 	
@@ -313,7 +322,7 @@ file_lists_compare(monitor_t *monitor, file_t *first, file_t *second)
 		total += modifications;
 		success = wait_for_all_jobs();	
                 if (!success) {
-                        _transfer_error();
+                        _transfer_error(monitor);
                 }
 	}
 
@@ -321,7 +330,7 @@ file_lists_compare(monitor_t *monitor, file_t *first, file_t *second)
 		printf("total of %d actions\n", total);
 	}
 
-	return total;
+	return (total);
 }
 
 const char *
@@ -329,10 +338,10 @@ directory_next(monitor_t *mon)
 {
 	if (mon->directories[mon->_w_pos] == NULL) {
 		mon->_w_pos = 0; 
-		return NULL;
+		return (NULL);
 	}
 
-	return mon->directories[mon->_w_pos++];
+	return (mon->directories[mon->_w_pos++]);
 }
 
 void
@@ -352,7 +361,7 @@ file_t *
 scan_recursive(const char *path)
 {
 	DIR *dir = opendir(path);
-	if (!dir) return NULL;
+	if (!dir) return (NULL);
 	struct dirent *dh = NULL;
 	char *directories[8192] = { NULL };
 	int i; 
@@ -400,7 +409,7 @@ scan_recursive(const char *path)
 		free(directories[i++]);
 	} 
 
-	return list;
+	return (list);
 }
 
 /* It's perfectly okay to monitor more than 1 directory */
@@ -413,7 +422,7 @@ monitor_files_get(monitor_t *mon, file_t *list)
 		list = scan_recursive(path);
 	}
 
-	return list;
+	return (list);
 }
 
 char *
@@ -427,6 +436,7 @@ _get_state_file_name(const char *path, const char *hostname, const char *usernam
 #else
 	const char *home = getenv("HOMEPATH");
 #endif
+	
 	snprintf(buf, sizeof(buf), "%s/.%s", home, PROGRAM_NAME);
 	struct stat st;
 
@@ -436,7 +446,7 @@ _get_state_file_name(const char *path, const char *hostname, const char *usernam
 
 	char hashname[(strlen(username) * 2) + (strlen(hostname) * 2) + (strlen(absolute) * 2) + 1];
  
-	char hashvalue[PATH_MAX * 3 + 1];     
+	char hashvalue[PATH_MAX * 2 + 1];     
         snprintf(hashvalue, sizeof(hashvalue), "%s:%s:%s", username, hostname, absolute);	
 
 	memset(hashname, 0, strlen(hashvalue) * 2 + 1);	
@@ -445,7 +455,7 @@ _get_state_file_name(const char *path, const char *hostname, const char *usernam
 
 	// return path for unique state file path (unique to user, location and destination)
 	snprintf(buf, sizeof(buf), "%s/%s", buf, hashname);
-	return strdup(buf);
+	return (strdup(buf));
 }
 
 file_t *
@@ -453,7 +463,7 @@ file_list_state_get(const char *path)
 {
 	char buf[4096];
 	FILE *f = fopen(path, "r");
-	if (!f) return NULL;
+	if (!f) return (NULL);
 
 	file_t *list = calloc(1, sizeof(file_t));
 
@@ -483,7 +493,7 @@ file_list_state_get(const char *path)
 
 	fclose(f);
 
-	return list; 
+	return (list); 
 }
 
 void
@@ -513,7 +523,7 @@ _monitor_compare_lists(void *self, file_t *one, file_t *two)
 		file_list_state_save(m->state_file, one);
 	}
 
-	return one;
+	return (one);
 }
 
 int 
@@ -521,19 +531,19 @@ monitor_watch(void *self, int poll)
 {
 	monitor_t *mon = self;
 
-	if (!mon->initialized) return 0;
+	if (!mon->initialized) return (0);
 
 	mon->list_now = monitor_files_get(self, mon->list_now);
 	mon->list_prev = _monitor_compare_lists(self, mon->list_prev, mon->list_now);  
        
         if (poll) {
 		sleep(poll); 
-		return 1;
+		return (1);
 	} 
 
 	quit = true;
 	
-	return 0;
+	return (0);
 }
 
 /* It's acceptable and fine to monitor > 1 directory */
@@ -547,7 +557,7 @@ monitor_watch_add(void *self, const char *path)
 
 	struct stat dstat;
 	if (stat(path, &dstat) < 0)
-		error("watch_add(): directory exists? check permissions.");
+		error("does directory exist? check permissions.");
 	
 	if (!S_ISDIR(dstat.st_mode))
 		error("watch_add(): not a directory.");
@@ -556,7 +566,7 @@ monitor_watch_add(void *self, const char *path)
 
 	mon->state_file = _get_state_file_name(path, mon->hostname, mon->username);
 
-	return 1;
+	return (1);
 }
 
 void
@@ -572,23 +582,26 @@ set_arguments(monitor_t *mon, char *cmd_string)
         char buf[PATH_MAX];
         char *user_start = cmd_string;
         char *user_end = strchr(user_start, '@');
-        if (!user_end) return 0;
+        if (!user_end) return (0);
         *user_end = '\0';
+
         mon->username = strdup(user_start);
 
         char *host_start = user_end + 1;
-        if (!host_start) return 0;
+        if (!host_start) return (0);
         char *host_end = strchr(host_start, ':');
-        if (!host_end) return 0;
+        if (!host_end) return (0);
         *host_end = '\0';
+
         mon->hostname = strdup(host_start);
+
         char *directory = host_end + 1;
         realpath(directory, buf);
 
         mon->watch_add(mon->self, buf);
         mon->cpu_count = system_cpu_count();
 
-	return 1;
+	return (1);
 }
 
 
