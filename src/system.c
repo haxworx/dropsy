@@ -17,12 +17,12 @@
 int
 system_cpu_count(void)
 {
-	int generic = 1;
+	int generic = 2;
 	int cores = 0;
 	const char *cpu_count = getenv("NUMBER_OF_PROCESSORS");
 	if (cpu_count) {
 		cores = atoi(cpu_count);
-		return cores;
+		return (cores);
 	}
 #if defined(__FreeBSD__) || defined(__DragonFly__) || defined(__OpenBSD__) || defined(__NetBSD__)
 	size_t len;
@@ -30,11 +30,11 @@ system_cpu_count(void)
 
 	len = sizeof(cores);
 	if (sysctl(mib, 2, &cores, &len, NULL, 0) != -1) 
-		return cores;
+		return (cores);
 #elif defined(__linux__)
 	char buf[4096];
 	FILE *f = fopen("/proc/stat", "r");
-	if (!f) return generic;
+	if (!f) return (generic);
 	int line = 0;
 	while (fgets(buf, sizeof(buf), f)) {
 		if (line) {
@@ -48,7 +48,7 @@ system_cpu_count(void)
 	fclose(f);
 
 	if (cores)
-		return cores;
+		return (cores);
 #endif  // FALL THROUGH
-	return generic;
+	return (generic);
 }
