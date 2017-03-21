@@ -10,7 +10,7 @@ VERSION=0.0.0.0.1
 OBJECTS_DIR=objects
 
 default: scripts monitor
-	-mkdir objects
+
 monitor: $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS_DIR)/*.o $(FLAGS) -o $(PROGRAM)
 
@@ -32,4 +32,3 @@ scripts:
 clean:
 	-rm $(PROGRAM) 
 	-rm $(OBJECTS_DIR)/*.o
-	-rm -r $(OBJECTS_DIR)
