@@ -11,7 +11,8 @@
 
 char *getpass(const char *prompt);
 
-void Error(char *fmt, ...)
+void
+Error(char *fmt, ...)
 {
 	char mesg[BUF_MAX];
 	va_list ap;
@@ -27,14 +28,15 @@ void Error(char *fmt, ...)
 char *
 _file_from_path(char *path)
 {
-	if (!path) return NULL;
+	if (!path) return (NULL);
 
 	char *t = strrchr(path, '/');
 	if (t) {
 		t++;
-		return t;
+		return (t);
 	}
-	return path;
+
+	return (path);
 }
 
 char *
@@ -44,7 +46,7 @@ _directory_from_path(char *path)
 	char buf[PATH_MAX + 1];
 	char *cwd = getcwd(buf, PATH_MAX + 1);
 
-	if (!path) return NULL;
+	if (!path) return (NULL);
 	
 	// /home/netstar/files becomes files/	
 	for (i = 0; cwd[i] == path[i]; i++);
@@ -57,9 +59,10 @@ _directory_from_path(char *path)
 	char *t = strrchr(path_begin, '/');
 	if (t) {
 		*t = '\0';
-		return path_begin;
+		return (path_begin);
 	}
-	return path_begin;
+
+	return (path_begin);
 }
 
 int
@@ -80,7 +83,7 @@ _status_code(char *buf)
                 }
         }
 
-        return status;
+        return (status);
 }        
 
 int
@@ -128,7 +131,7 @@ authenticate(void *self)
 	if (status != 1)
 		mon->error("Invalid username or password");
 
-	return 0;
+	return (0);
 }
 
 int 
@@ -141,7 +144,7 @@ remote_file_del(void *self, char *file)
         mon->bio = Connect_SSL(mon->hostname, DEFAULT_PORT);
         if (!mon->bio) {
                 fprintf(stderr, "Could not connect()\n");
-                return 1;
+                return (1);
         }
 
         int content_length = 0;
@@ -169,19 +172,20 @@ remote_file_del(void *self, char *file)
         char buf[BUF_MAX];
 
         int bytes = Read(mon, buf, sizeof(buf));
-        if (bytes <= 0) return 1;
+        if (bytes <= 0) return (1);
         buf[bytes] = '\0';
 	
         Close(mon);
 
         int status = _status_code(buf);
-        if (status != 1) return 1;
+        if (status != 1) return (1);
 
 
-        return 0;
+        return (0);
 }
 
-int remote_file_add(void *self, char *file)
+int
+remote_file_add(void *self, char *file)
 {
 	monitor_t *mon = self;
         char path[PATH_MAX] = { 0 };
@@ -192,16 +196,18 @@ int remote_file_add(void *self, char *file)
         mon->bio = Connect_SSL(mon->hostname, DEFAULT_PORT);
         if (!mon->bio) {
                 fprintf(stderr, "Could not connect()\n");
-                return 1;
+                return (1);
         }
+
         struct stat fstats;
         if (strlen(path) == 0) {
-                return 1;
+                return (1);
         }
 
         if (stat(path, &fstats) < 0) {
-                return 1;
+                return (1);
         }
+
         FILE *f = fopen(path, "rb");
         if (f == NULL) {
                 mon->error
@@ -240,12 +246,13 @@ int remote_file_add(void *self, char *file)
                         // this is exactly the same with 0 flag
                         ssize_t bytes = Write(mon, buffer, count);
                         if (bytes < count) {
-                                return 1;
+                                return (1);
                         }
+
                         if (bytes == 0) {
                                 break;
                         } else if (bytes < 0) {
-                                return 1;
+                                return (1);
                         } else {
                                 size -= bytes;
                                 total += bytes;
@@ -262,15 +269,15 @@ int remote_file_add(void *self, char *file)
         char buf[BUF_MAX];
 
         int bytes = Read(mon, buf, sizeof(buf));
-        if (bytes <= 0) return 1;
+        if (bytes <= 0) return (1);
         buf[bytes] = '\0';
 
         Close(mon);
 
 	int status = _status_code(buf);
-        if (status != 1) return 1;
+        if (status != 1) return (1);
 
-        return 0;
+        return (0);
 }
 
 int 
@@ -281,10 +288,10 @@ Connect(const char *hostname, int port)
 	struct sockaddr_in inaddr;
 
 	sock = socket(AF_INET, SOCK_STREAM, 0);
-	if (sock < 0) return 0;
+	if (sock < 0) return (0);
 
 	host = gethostbyname(hostname);
-	if (host == NULL) return 0;
+	if (host == NULL) return (0);
 
 	inaddr.sin_family = AF_INET;
 	inaddr.sin_port = htons(port);
@@ -295,13 +302,14 @@ Connect(const char *hostname, int port)
 				sizeof(struct sockaddr));
 
 	if (status == 0) {
-		return sock;
+		return (sock);
 	}
 
-	return 0;
+	return (0);
 }
 
-BIO *Connect_SSL(char *hostname, int port)
+BIO *
+Connect_SSL(char *hostname, int port)
 {
         BIO *bio = NULL;
         char bio_addr[BUF_MAX] = { 0 };
@@ -326,35 +334,38 @@ BIO *Connect_SSL(char *hostname, int port)
                 Error("SSL Unable to connect");
         }
 
-        return bio;
+        return (bio);
 }
 
-ssize_t Read(void *self, char *buf, int len)
+ssize_t
+Read(void *self, char *buf, int len)
 {
 	monitor_t *mon = self;
 	if (mon->bio)
-		return BIO_read(mon->bio, buf, len);
+		return (BIO_read(mon->bio, buf, len));
 
-	return read(mon->sock, buf, len);
+	return (read(mon->sock, buf, len));
 }
 
-ssize_t Write(void *self, char *buf, int len)
+ssize_t
+Write(void *self, char *buf, int len)
 {
 	monitor_t *mon = self;
 	if (mon->bio)
-		return BIO_write(mon->bio, buf, len);
+		return (BIO_write(mon->bio, buf, len));
 
-	return write(mon->sock, buf, len);
+	return (write(mon->sock, buf, len));
 }
 
-int Close(void *self)
+int
+Close(void *self)
 {
 	monitor_t *mon = self;
 	if (mon->bio) {
 		BIO_free_all(mon->bio);
 		mon->bio = NULL;
-		return 0;
+		return (0);
 	}
 	
-	return close(mon->sock);
+	return (close(mon->sock));
 }
