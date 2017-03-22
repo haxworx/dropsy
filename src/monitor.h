@@ -74,15 +74,15 @@ struct monitor_t {
 	fn_watch_add watch_add;	
 	fn_watch watch;
 	fn_watch monitor;
-	fn_callback_set callback_set;
-	fn_error error;
 	fn_authenticate authenticate;
 	fn_remote_add remote_add;
 	fn_remote_del remote_del;
         fn_shutdown shutdown;
+	fn_callback_set callback_set;
 	callback add_callback;
 	callback del_callback;
 	callback mod_callback;	
+	fn_error error;
 };
 
 monitor_t *monitor_new(void);
