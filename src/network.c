@@ -9,6 +9,10 @@
 #define REMOTE_URI "/any"
 #define BUF_MAX 4096
 
+static ssize_t Read(void *self, char *buf, int len);
+static ssize_t Write(void *self, char *buf, int len);
+static int Close(void *self);
+
 char *getpass(const char *prompt);
 
 void
@@ -25,7 +29,7 @@ Error(char *fmt, ...)
 	exit(1);
 }
 
-char *
+static char *
 _file_from_path(char *path)
 {
 	if (!path) return (NULL);
@@ -39,7 +43,7 @@ _file_from_path(char *path)
 	return (path);
 }
 
-char *
+static char *
 _directory_from_path(char *path)
 {
 	int i;
@@ -65,7 +69,7 @@ _directory_from_path(char *path)
 	return (path_begin);
 }
 
-int
+static int
 _status_code(char *buf)
 {
 #define AUTH_STATUS_STR "status: "
@@ -337,7 +341,7 @@ Connect_SSL(char *hostname, int port)
         return (bio);
 }
 
-ssize_t
+static ssize_t
 Read(void *self, char *buf, int len)
 {
 	monitor_t *mon = self;
@@ -347,7 +351,7 @@ Read(void *self, char *buf, int len)
 	return (read(mon->sock, buf, len));
 }
 
-ssize_t
+static ssize_t
 Write(void *self, char *buf, int len)
 {
 	monitor_t *mon = self;
@@ -357,7 +361,7 @@ Write(void *self, char *buf, int len)
 	return (write(mon->sock, buf, len));
 }
 
-int
+static int
 Close(void *self)
 {
 	monitor_t *mon = self;

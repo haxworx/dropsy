@@ -7,8 +7,22 @@
 bool first_run = false;
 bool quit = false;
 
-char *_get_state_file_name(const char *path, const char *hostname, const char *username);
-file_t *file_list_state_get(const char *path);
+/* Internal functions */
+
+static void file_list_free(file_t *list);
+static file_t *file_list_add(file_t *list, char *path, struct stat *st);
+static file_t *file_exists(file_t *list, const char *filename);
+static int file_lists_compare(monitor_t *monitor, file_t *first, file_t *second);
+static const char *directory_next(monitor_t *mon);
+static void _list_append(file_t *one, file_t *two);
+static file_t *scan_recursive(const char *path);
+static file_t * monitor_files_get(monitor_t *mon, file_t *list);
+static file_t *_monitor_compare_lists(void *self, file_t *one, file_t *two);
+static int _check_add_files(monitor_t *mon, file_t *first, file_t *second);
+static int _check_del_files(monitor_t *mon, file_t *first, file_t *second);
+static int _check_mod_files(monitor_t *mon, file_t *first, file_t *second);
+static char *_get_state_file_name(const char *path, const char *hostname, const char *username);
+static file_t *file_list_state_get(const char *path);
 
 int error(char *str)
 {
@@ -18,7 +32,7 @@ int error(char *str)
 
 static int n_jobs = 0;
 
-int
+static int
 wait_for_job(void)
 {
         int status; 
@@ -34,7 +48,7 @@ wait_for_job(void)
         return (status);
 }
 
-int
+static int
 wait_for_all_jobs(void)
 {
 	while (n_jobs) {
@@ -93,7 +107,7 @@ monitor_monitor(void *self, int interval)
 	return (1);
 }                
 
-void
+static void
 _clear_password(char *pass) 
 {
         while (*pass) {
@@ -140,7 +154,7 @@ monitor_callback_set(void *self, int type, callback func)
 	return (1);
 }
 
-void 
+static void 
 file_list_free(file_t *list)
 {
 	file_t *c = list;
@@ -153,7 +167,7 @@ file_list_free(file_t *list)
 	}
 }
 
-file_t * 
+static file_t * 
 file_list_add(file_t *list, char *path, struct stat *st)
 {
 	file_t *c = list;
@@ -176,7 +190,7 @@ file_list_add(file_t *list, char *path, struct stat *st)
 	return (list);
 }
 
-file_t *
+static file_t *
 file_exists(file_t *list, const char *filename)
 {
 	file_t *f = list->next;
@@ -191,7 +205,7 @@ file_exists(file_t *list, const char *filename)
 	return (NULL);
 }
 
-int
+static int
 _check_add_files(monitor_t *mon, file_t *first, file_t *second)
 {
 	file_t *f = second->next;
@@ -227,7 +241,7 @@ _check_add_files(monitor_t *mon, file_t *first, file_t *second)
 	return (changes);
 }
 
-int
+static int
 _check_del_files(monitor_t *mon, file_t *first, file_t *second)
 {
 	file_t *f = first->next;
@@ -259,7 +273,7 @@ _check_del_files(monitor_t *mon, file_t *first, file_t *second)
 	return (changes);
 }
 
-int
+static int
 _check_mod_files(monitor_t* mon, file_t *first, file_t *second)
 {
 	file_t *f = second->next;
@@ -294,7 +308,7 @@ _check_mod_files(monitor_t* mon, file_t *first, file_t *second)
 	return (changes);
 }
 
-void
+static void
 _transfer_error(monitor_t *mon)
 {
 	monitor_shutdown(mon);
@@ -302,7 +316,7 @@ _transfer_error(monitor_t *mon)
         exit(1);
 }
 
-int
+static int
 file_lists_compare(monitor_t *monitor, file_t *first, file_t *second)
 {
         int success = 0;
@@ -347,7 +361,7 @@ file_lists_compare(monitor_t *monitor, file_t *first, file_t *second)
 	return (total);
 }
 
-const char *
+static const char *
 directory_next(monitor_t *mon)
 {
 	if (mon->directories[mon->_w_pos] == NULL) {
@@ -358,7 +372,7 @@ directory_next(monitor_t *mon)
 	return (mon->directories[mon->_w_pos++]);
 }
 
-void
+static void
  _list_append(file_t *one, file_t *two)
 {
 	file_t *c = one;
@@ -371,7 +385,7 @@ void
 		c->next = NULL;
 }
 
-file_t * 
+static file_t * 
 scan_recursive(const char *path)
 {
 	DIR *dir = opendir(path);
@@ -427,7 +441,7 @@ scan_recursive(const char *path)
 }
 
 /* It's perfectly okay to monitor more than 1 directory */
-file_t *
+static file_t *
 monitor_files_get(monitor_t *mon, file_t *list)
 {
 	const char *path;
@@ -439,7 +453,7 @@ monitor_files_get(monitor_t *mon, file_t *list)
 	return (list);
 }
 
-char *
+static char *
 _get_state_file_name(const char *path, const char *hostname, const char *username)
 {
 	char buf[PATH_MAX];
@@ -472,7 +486,7 @@ _get_state_file_name(const char *path, const char *hostname, const char *usernam
 	return (strdup(buf));
 }
 
-file_t *
+static file_t *
 file_list_state_get(const char *path)
 {
 	char buf[4096];
@@ -510,7 +524,7 @@ file_list_state_get(const char *path)
 	return (list); 
 }
 
-void
+static void
 file_list_state_save(const char *path, file_t *current_files)
 {
 	file_t *cursor = current_files->next;
@@ -525,7 +539,7 @@ file_list_state_save(const char *path, file_t *current_files)
 	fclose(f);
 }
 
-file_t *
+static file_t *
 _monitor_compare_lists(void *self, file_t *one, file_t *two)
 {
 	monitor_t *m = self;
@@ -583,7 +597,7 @@ monitor_watch_add(void *self, const char *path)
 	return (1);
 }
 
-void
+static void
 exit_safe(int sig)
 {
         if (sig != SIGINT && sig != SIGTERM) return;
