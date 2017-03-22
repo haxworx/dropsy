@@ -80,10 +80,15 @@ monitor_mainloop(void *self, int interval)
 		mon->list_prev = monitor_files_get(self, mon->list_prev);	
 	}
 
-	// this can run and monitor in semi-realtime
-	// if interval is > 0 then program will scan
-	// for changes every interval seconds...
-        while (monitor_watch(self, interval) && !quit);
+	/* this can run and monitor in semi-realtime
+	 * if interval is > 0 then program will scan
+	 * for changes every interval seconds...
+	 */
+	do {
+		int res = monitor_watch(self, interval);
+		if (!res)
+			break;
+	} while (!quit); 
 
 	return (1);
 }                
@@ -109,6 +114,9 @@ monitor_shutdown(void *self)
                 free(mon->password);
         if (mon->hostname)
                 free(mon->hostname);
+
+	for (int i = 0; mon->directories[i]; i++)
+		free(mon->directories[i]);
 
         free(mon);
 }
@@ -196,7 +204,7 @@ _check_add_files(monitor_t *mon, file_t *first, file_t *second)
 				mon->add_callback(f);
 
 			f->changed = MONITOR_ADD;
-			if (n_jobs == mon->cpu_count) {
+			if (n_jobs == mon->parallel_max) {
 				wait_for_job();
 			}
 			pid_t pid = fork();
@@ -231,7 +239,7 @@ _check_del_files(monitor_t *mon, file_t *first, file_t *second)
 			f->changed = MONITOR_DEL;
 			if (mon->del_callback) 
 				mon->del_callback(f);
-                        if (n_jobs == mon->cpu_count) {
+                        if (n_jobs == mon->parallel_max) {
                                 wait_for_job();
                         }
                         pid_t pid = fork();
@@ -265,7 +273,7 @@ _check_mod_files(monitor_t* mon, file_t *first, file_t *second)
 				if (mon->mod_callback)
 					mon->mod_callback(f);
 
-				if (n_jobs == mon->cpu_count) {
+				if (n_jobs == mon->parallel_max) {
 					wait_for_job();
 				}
 				pid_t pid = fork();
@@ -605,7 +613,7 @@ set_arguments(monitor_t *mon, char *cmd_string)
         realpath(directory, buf);
 
         mon->watch_add(mon->self, buf);
-        mon->cpu_count = system_cpu_count();
+        mon->parallel_max = system_cpu_count() * 2;
 
 	return (1);
 }

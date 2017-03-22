@@ -17,7 +17,7 @@
 
 #define SLASH '/'
 
-#define DIRS_MAX 12
+#define DIRS_MAX 256
 
 #define MONITOR_NONE 0
 #define MONITOR_ADD 1 
@@ -57,18 +57,19 @@ int error(char *);
 typedef struct monitor_t monitor_t;
 struct monitor_t {
 	monitor_t *self;
-	char *hostname;
 	int sock;
 	BIO *bio;
+	char *hostname;
 	char *username;
 	char *password;
 	char *directories[DIRS_MAX];
-	int cpu_count;
 	int _d_idx, _w_pos;
+	int parallel_max;
 	char *state_file;
 	bool initialized;
 	file_t *list_now;
 	file_t *list_prev;
+	/* Functions */
 	fn_init init;
 	fn_watch_add watch_add;	
 	fn_watch watch;
