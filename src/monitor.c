@@ -103,6 +103,12 @@ monitor_shutdown(void *self)
         monitor_t *mon = self;
 
         _clear_password(mon->password);
+        if (mon->username)
+                free(mon->username);
+        if (mon->password)
+                free(mon->password);
+        if (mon->hostname)
+                free(mon->hostname);
 
         free(mon);
 }
