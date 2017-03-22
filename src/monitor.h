@@ -47,7 +47,7 @@ typedef void (*fn_shutdown)(void *self);
 
 /* External functions */
 int monitor_watch(void *self, int poll_interval);
-int monitor_mainloop(void *self, int poll_interval);
+int monitor_monitor(void *self, int poll_interval);
 int monitor_watch_add(void *self, const char *path);
 int monitor_callback_set(void *self, int type, callback);
 void monitor_shutdown(void *self);
@@ -73,7 +73,7 @@ struct monitor_t {
 	fn_init init;
 	fn_watch_add watch_add;	
 	fn_watch watch;
-	fn_watch mainloop;
+	fn_watch monitor;
 	fn_callback_set callback_set;
 	fn_error error;
 	fn_authenticate authenticate;

@@ -58,7 +58,7 @@ monitor_new(void)
 	mon->watch_add = &monitor_watch_add;
 	mon->init = &monitor_init;
 	mon->watch = &monitor_watch;
-	mon->mainloop = &monitor_mainloop;
+	mon->monitor = &monitor_monitor;
 	mon->self = mon;
 	mon->authenticate = &authenticate;
 	mon->remote_add = remote_file_add;
@@ -69,7 +69,7 @@ monitor_new(void)
 }
 
 int
-monitor_mainloop(void *self, int interval) 
+monitor_monitor(void *self, int interval) 
 {
 	monitor_t *mon = self;
 	if (mon->_d_idx == 0) exit(1 << 0);

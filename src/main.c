@@ -45,7 +45,7 @@ int main(int argc, char **argv)
 
 	/* CTRL+C or SIGTERM to exit gracefully */
 	/* if interval is 0 run once only */
-	mon->mainloop(mon->self, interval);
+	mon->monitor(mon->self, interval);
 
 	mon->shutdown(mon->self);
 	
