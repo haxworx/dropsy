@@ -1,4 +1,5 @@
-#if ! defined(__MONITOR_H__)
+#ifndef __MONITOR_H__
+#define __MONITOR_H__
 
 #define PROGRAM_NAME "dropsy"
 #define __MONITOR_H__
@@ -33,9 +34,6 @@ struct file_t {
 	file_t *next;
 };
 
-typedef int (*callback)(void *data);
-
-typedef int (*fn_callback_set)(void *self, int type, callback);
 typedef int (*fn_watch_add)(void *self, const char * path);
 typedef int (*fn_init)(void *self, char *cmd_string);
 typedef int (*fn_watch)(void *self, int poll_interval);
@@ -44,6 +42,8 @@ typedef int (*fn_remote_del)(void *self, char *file);
 typedef int (*fn_remote_add)(void *self, char *file);
 typedef int (*fn_error)(char *string);
 typedef void (*fn_shutdown)(void *self);
+typedef int (*callback)(void *data);
+typedef int (*fn_callback_set)(void *self, int type, callback);
 
 /* External functions */
 int monitor_watch(void *self, int poll_interval);
