@@ -627,7 +627,7 @@ set_arguments(monitor_t *mon, char *cmd_string)
         realpath(directory, buf);
 
         mon->watch_add(mon->self, buf);
-        mon->parallel_max = system_cpu_count() * 2;
+        mon->parallel_max = system_cpu_count();
 
 	return (1);
 }
