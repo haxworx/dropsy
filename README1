@@ -1,0 +1,51 @@
+
+   Copyright (c) 2016, Al Poole <netstar@gmail.com>
+   All rights reserved.
+
+   USAGE
+
+   The client is executed as below:
+
+   $ dropsy username@host:/path/to/directory
+
+   e.g.
+
+   $ dropsy dave@trouserlump.com:/home/dave/files
+
+   The client will duplicate and update the local directory layout and
+   contents to the remote computer running the server.
+
+   THANKS
+
+   Thanks to Sam Watkins, Chris Rahm, Jason Pierce,
+   Ed Poole, Graham Anderson and Mike Parfitt.
+
+   Thanks also be to our God and Father of Our Lord Jesus Christ!
+
+   CONTACT
+
+   Send an e-mail with your questions, problems, suggestions or to arrange a
+   nice sit down, cup of tea and a biscuit!
+
+   E-mail: netstar@gmail.com
+   Web: http://haxlab.org
+
+   Client: https://github.com/haxwox/dropsy (this)
+   Server: https://github.com/haxworx/dropsyd
+
+   DONATIONS
+
+   A change.
+   
+   Accepting donations of cash, food, beer and computer equipment!
+
+   No seagulls were harmed during the production of Dropsy!
+
+   BUGS
+
+   Don't run this as root or as the system administrator for goodness sake!
+
+   SALUTATION
+
+   Cheerio! Cheerio! Cheerio!
+
