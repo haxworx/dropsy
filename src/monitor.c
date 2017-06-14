@@ -457,6 +457,7 @@ static char *
 _get_state_file_name(const char *path, const char *hostname, const char *username)
 {
 	char buf[PATH_MAX];
+        char path_complete[PATH_MAX];
 	char absolute[PATH_MAX * 2 + 1];
 	realpath(path, absolute);
 #if defined(__linux__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__NetBSD__)
@@ -472,18 +473,26 @@ _get_state_file_name(const char *path, const char *hostname, const char *usernam
 	if (stat(buf, &st) < 0)
 		mkdir(buf, 0755);
 
-	char hashname[(strlen(username) * 2) + (strlen(hostname) * 2) + (strlen(absolute) * 2) + 1];
+        size_t hash_len = 2 * (strlen(username) + strlen(hostname) + strlen(absolute));
+        char *hash_format = "%s:%s:%s";
+        hash_len += strlen(hash_format);
+
+        char *hashed_text = calloc(1, hash_len);
  
-	char hashvalue[PATH_MAX * 2 + 1];     
-        snprintf(hashvalue, sizeof(hashvalue), "%s:%s:%s", username, hostname, absolute);	
+	char text[4096];
+        snprintf(text, sizeof(text), hash_format, username, hostname, absolute);
 
-	memset(hashname, 0, strlen(hashvalue) * 2 + 1);	
-	for (int i = 0; i < strlen(hashvalue); i++)
-		snprintf(hashname, sizeof(hashname), "%s%2x", hashname, hashvalue[i]);
+	for (int i = 0; i < strlen(text); i++) {
+                char hex[4];
+                snprintf(hex, sizeof(hex), "%2x", text[i]);
+                strcat(hashed_text, hex);
+        }
 
-	// return path for unique state file path (unique to user, location and destination)
-	snprintf(buf, sizeof(buf), "%s/%s", buf, hashname);
-	return (strdup(buf));
+	snprintf(path_complete, sizeof(path_complete), "%s/%s", buf, hashed_text);
+
+        free(hashed_text);
+
+	return (strdup(path_complete));
 }
 
 static file_t *

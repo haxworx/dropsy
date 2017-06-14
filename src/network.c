@@ -236,9 +236,11 @@ remote_file_add(void *self, char *file)
             "Username: %s\r\n"
             "Password: %s\r\n"
             "Filename: %s\r\n" "Directory: %s\r\n" "Action: ADD\r\n\r\n";
+
         snprintf(post, sizeof(post), fmt, REMOTE_URI, mon->hostname,
                  content_length, mon->username, mon->password, file_from_path,
                  dir_from_path);
+
         Write(mon, post, strlen(post));
         int total = 0;
 
