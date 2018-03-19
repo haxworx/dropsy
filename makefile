@@ -1,4 +1,4 @@
-  PROGRAM=dropsy
+PROGRAM=dropsy
 CFLAGS=-g -ggdb3 -O0 -Wall -pedantic -std=c99
 PKGS=openssl
 FLAGS=$(shell pkg-config --libs --cflags $(PKGS))
