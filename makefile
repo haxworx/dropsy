@@ -1,6 +1,6 @@
-PROGRAM=dropsy
-CFLAGS=-g -ggdb3 -O0 -Wall -pedantic -std=c99 
-PKGS=openssl 
+  PROGRAM=dropsy
+CFLAGS=-g -ggdb3 -O0 -Wall -pedantic -std=c99
+PKGS=openssl
 FLAGS=$(shell pkg-config --libs --cflags $(PKGS))
 INCLUDES=$(shell pkg-config --cflags $(PKGS))
 SRC_DIR=src
@@ -26,9 +26,9 @@ scripts.o: $(SRC_DIR)/scripts.c
 main.o: $(SRC_DIR)/main.c
 	$(CC) -c $(CFLAGS) $(SRC_DIR)/main.c -o $(OBJECTS_DIR)/$@
 
-scripts: 
-	chmod +x $(SCRIPTS)/*.sh 
+scripts:
+	chmod +x $(SCRIPTS)/*.sh
 
 clean:
-	-rm $(PROGRAM) 
+	-rm $(PROGRAM)
 	-rm $(OBJECTS_DIR)/*.o
